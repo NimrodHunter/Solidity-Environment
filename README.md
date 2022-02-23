@@ -4,6 +4,9 @@
 - Typechain
 - Ethers
 - Waffle
-- solhint
+- Solhint
 - Solcover
 - Prettier Plugin Solidity
+
+## NFT Factory
+NFT Factory through proxy pattern to save gas as example

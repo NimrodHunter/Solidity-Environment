@@ -1,9 +1,75 @@
 import { expect } from "chai";
 import { increaseTime } from "../utils/utils";
 
-export function shouldBehaveLikeMockToken(): void {
+export function shouldBehaveLikeNFTFactory(): void {
     it("Successful Deployment", async function () { 
 
+    });
+
+    it("Create NFT", async function () {
+        let owner = this.signers.admin;
+        let name = "long swords";
+        let sysmbol = "LS";
+
+        let mintNFTTx = await this.nFTFactory.connect(owner).mintNFT(this.nFTCard.address, name, sysmbol);
+        let minted = await mintNFTTx.wait();
+
+        let eventParams = minted.events?.filter((x) => {
+            return (x.event == "Cloned")
+        })[0].args
+
+        let NFTAddress = eventParams?.clone.toString();
+
+        let NFTBalance = await this.nFTFactory.connect(owner).nftCounter();
+        expect(NFTBalance.toNumber()).to.equal(1);
+
+        let NFT = this.nFTCard.attach(NFTAddress);
+        expect((await NFT.name()).toString()).to.equal(name);
+        expect((await NFT.symbol()).toString()).to.equal(sysmbol);
+    });
+
+    it("Create two NFT", async function () {
+        let owner = this.signers.admin;
+        let name1 = "long swords";
+        let sysmbol1 = "LS";
+
+        let name2 = "regular shield";
+        let sysmbol2 = "RS";
+
+        let mintNFTTx = await this.nFTFactory.connect(owner).mintNFT(this.nFTCard.address, name1, sysmbol1);
+        await mintNFTTx.wait();
+
+        mintNFTTx = await this.nFTFactory.connect(owner).mintNFT(this.nFTCard.address, name2, sysmbol2);
+        await mintNFTTx.wait();
+
+
+        let NFTBalance = await this.nFTFactory.connect(owner).nftCounter();
+        expect(NFTBalance.toNumber()).to.equal(2);
+    });
+
+    it("Revert, Initialize two times the same NFT", async function () {
+        let owner = this.signers.admin;
+        let name = "long swords";
+        let sysmbol = "LS";
+
+        let name2 = "regular shield";
+        let sysmbol2 = "RS";
+
+        let mintNFTTx = await this.nFTFactory.connect(owner).mintNFT(this.nFTCard.address, name, sysmbol);
+        let minted = await mintNFTTx.wait();
+
+        let eventParams = minted.events?.filter((x) => {
+            return (x.event == "Cloned")
+        })[0].args
+
+        let NFTAddress = eventParams?.clone.toString();
+
+        let NFTBalance = await this.nFTFactory.connect(owner).nftCounter();
+        expect(NFTBalance.toNumber()).to.equal(1);
+
+        let NFT = this.nFTCard.attach(NFTAddress);
+        
+        await expect(NFT.initialize(name2, sysmbol2)).to.be.revertedWith("contract already initialized");
     });
 /*
     it("Successful Token Transfer To Vesting Contract", async function () { 

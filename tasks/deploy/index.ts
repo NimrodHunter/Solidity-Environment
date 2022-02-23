@@ -1,1 +1,1 @@
-import "./mocktoken";
+import "./nftFactory";
